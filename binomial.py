@@ -31,16 +31,41 @@ class Binomial(Param):
         # Generate option prices recursively
         stock = self.stock()
         option = np.zeros([self.N + 1, self.N + 1])
+
         if o_type == 'c':
             option[:, self.N] = np.maximum(np.zeros(self.N + 1), (stock[:, self.N] - self.K))
             for i in range(self.N - 1, -1, -1):
                 for j in range(0, i + 1):
-                    option[j, i] = exp(-self.r*self.h)*(self.q*option[j, i + 1] + (1-self.q)*option[j + 1, i + 1])
+                    option[j, i] = exp(-self.r*self.h)* \
+                    (self.q*option[j, i + 1] + (1-self.q)*option[j + 1, i + 1])
+
         elif o_type == 'p':
             option[:, self.N] = np.maximum(np.zeros(self.N + 1), (self.K - stock[:, self.N]) ) # put payoff
             for i in range(self.N - 1, -1, -1):
                 for j in range(0, i + 1):
-                    option[j, i] = exp(-self.r*self.h)*((1-self.q)*option[j, i + 1] + self.q*option[j + 1, i + 1])
+                    option[j, i] = exp(-self.r*self.h)* \
+                    (self.q*option[j, i + 1] + (1-self.q)*option[j + 1, i + 1])
+
+        return option
+
+    def american(self, o_type):
+        stock = self.stock()
+        option = np.zeros([self.N + 1, self.N + 1])
+        if o_type == 'c':
+            payoff = np.maximum( np.triu(stock - self.K), 0 )
+            option[:, self.N] = np.maximum(np.zeros(self.N + 1), (stock[:, self.N] - self.K))
+            for i in range(self.N -1, -1, -1):
+                for j in range(0, i + 1):
+                    option[j, i] = exp(-self.r*self.h)* \
+                            (self.q*max(option[j, i + 1], payoff[j, i + 1]) + (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1]))     
+
+        elif o_type == 'p':
+            payoff = np.maximum( np.triu(self.K - stock), 0 )
+            option[:, self.N] = np.maximum(np.zeros(self.N + 1), (self.K - stock[:, self.N]))
+            for i in range(self.N -1, -1, -1):
+                for j in range(0, i + 1):
+                    option[j, i] = exp(-self.r*self.h)* \
+                            (self.q*max(option[j, i + 1], payoff[j, i + 1]) + (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1])) 
 
         return option
 
