@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env python3
 
 import numpy as np
@@ -6,8 +8,8 @@ from param import Param
 
 
 class Binomial(Param):
-    def __init__(self, S0, K, sigma, r, delta, T, N):
-        super().__init__(S0, K, sigma, r, delta, T)
+    def __init__(self, spot0, K, sigma, r, delta, T, N):
+        super().__init__(spot0, K, sigma, r, delta, T)
         self. N = N
 
         self.h = T / N
@@ -24,7 +26,7 @@ class Binomial(Param):
         stock = np.zeros([self.N + 1, self.N + 1])
         for i in range(self.N + 1):
             for j in range(i + 1):
-                stock[j, i] = self.S0 * (self.u ** (i - j)) * (self.d ** j)
+                stock[j, i] = self.spot0 * (self.u ** (i - j)) * (self.d ** j)
         return stock
     
     def european(self, o_type):

@@ -5,13 +5,13 @@ from numpy.random import normal as rnorm
 import numpy as np
 from scipy.stats import norm
 from math import exp, log, sqrt # python functions faster than numpy for scalar 
-from param import Param
+import Param
 
 """
-For the black scholes model we have assumptions on the underying assets:
+For the Black-Scholes model we have assumptions on the underlying assets:
     - (riskless rate) The rate of return on the riskless asset is constant
-    - (random walk) Log returns of a stock price is an infintesimal random walk
-    with drift. ie geometric Brownian motion with constant volatility and drift.
+    - (random walk) Log returns of a stock price is an infinitesimal random walk
+    with drift. i.e. Geometric Brownian motion with constant volatility and drift.
     - The stock doesn't pay dividend.
 
 Assumptions on the market:
@@ -37,10 +37,11 @@ Assumptions on the market:
 
 
 class BlackScholes(Param):
-    def __init__(self, S0, K, sigma, r, delta, T):
-        super().__init__(S0, K, sigma, r, delta, T)
+    def __init__(self, spot0, K, sigma, r, delta, T):
+        super().__init__(spot0, K, sigma, r, delta, T)
 
-        self.d1 = (log(self.S0/self.K) + (self.r - self.delta + 0.5*self.sigma**2)*self.T)/(self.sigma*sqrt(self.T))
+        self.d1 = (log(self.spot0/self.K) + \
+	(self.r - self.delta + 0.5*self.sigma**2)*self.T)/(self.sigma*sqrt(self.T))
 
         self.d2 = self.d1 - self.sigma*sqrt(self.T)
 
@@ -52,12 +53,12 @@ class BlackScholes(Param):
 
 
     def call(self):
-        return self.F(self.S0, self.delta)*norm.cdf(self.d1) -\
+        return self.F(self.spot0, self.delta)*norm.cdf(self.d1) -\
                self.F(self.K, self.r)*norm.cdf(self.d2)
 
     def put(self):
         return self.F(self.K, self.r)*norm.cdf(-self.d2) -\
-                self.F(self.S0, self.delta)*norm.cdf(-self.d1)
+                self.F(self.spot0, self.delta)*norm.cdf(-self.d1)
 
     def digitalCall(self): return exp(-self.r*self.T)*norm.cdf(self.d2)
 
@@ -69,17 +70,18 @@ class BlackScholes(Param):
         elif op == 'c':
             return exp(-self.delta*self.T)*norm.cdf(self.d1)
 
-    def Gamma(self): return exp(-self.delta*self.T)*norm.pdf(self.d1) / (self.S0*self.sigma*sqrt(self.T))
-    def Vega(self): return exp(-self.delta*self.T)*self.S0*norm.pdf(self.d1)*sqrt(self.T)
+    def Gamma(self): return exp(-self.delta*self.T)*norm.pdf(self.d1) / (self.spot0*self.sigma*sqrt(self.T))
+    def Vega(self): return exp(-self.delta*self.T)*self.spot0*norm.pdf(self.d1)*sqrt(self.T)
 
     def Theta(self, op_type):
         if op_type == 'c':
-            return self.delta*self.S0*exp(-self.delta*self.T)*norm.cdf(self.d1) \
+            return self.delta*self.spot0*exp(-self.delta*self.T)*norm.cdf(self.d1) \
                     - (exp(-self.r*self.T)*self.K*norm.pdf(self.d2)*self.sigma) / (2*sqrt(self.T)) \
                     - self.r*self.K*exp(-self.r*self.T)*norm.cdf(self.d2)
+
         elif op_type == 'p':
-            return - self.delta*self.S0*exp(-self.delta*self.T)*norm.cdf(-self.d1) \
-                    - (exp(-self.delta*self.T)*self.S0*norm.pdf(self.d1)*self.sigma) / 2*sqrt(self.T) \
+            return - self.delta*self.spot0*exp(-self.delta*self.T)*norm.cdf(-self.d1) \
+                    - (exp(-self.delta*self.T)*self.spot0*norm.pdf(self.d1)*self.sigma) / 2*sqrt(self.T) \
                     + self.r*self.K*exp(-self.r*self.T)*norm.cdf(-self.d2)
 
     def Rho(self, op_type):
@@ -91,21 +93,23 @@ class BlackScholes(Param):
 
     def perpetual(self,option):
         if option == 'c':
-            h1 = 0.5 - (self.r - self.delta)/self.sigma**2 + sqrt(((self.r - self.delta)/self.sigma**2 - 0.5)**2 + 2*self.r/self.sigma**2)
+            h1 = 0.5 - (self.r - self.delta)/self.sigma**2 + \
+	    sqrt(((self.r - self.delta)/self.sigma**2 - 0.5)**2 + 2*self.r/self.sigma**2)
             H = self.K*(h1 / (h1-1))
-            payoff = (H - self.K)* (self.S0/H)**h1
-            return self.K/(h1 - 1) * (self.S0/self.K * (h1 - 1) / h1)**h1
+            payoff = (H - self.K)* (self.spot0/H)**h1
+            return self.K/(h1 - 1) * (self.spot0/self.K * (h1 - 1) / h1)**h1, H
 
         elif option == 'p':
-            h2 = 0.5 - (self.r - self.delta)/self.sigma**2 - sqrt(((self.r - self.delta)/self.sigma**2 - 0.5)**2 + 2*self.r/self.sigma**2)
+            h2 = 0.5 - (self.r - self.delta)/self.sigma**2 - \
+	    sqrt(((self.r - self.delta)/self.sigma**2 - 0.5)**2 + 2*self.r/self.sigma**2)
             H = self.K*(h2 / (h2-1))
-            payoff = (self.K - H)* (self.S0/H)**h2
-            return self.K/(1 - h2) * (self.S0/self.K * (h2 - 1) / h2)**h2
+            payoff = (self.K - H)* (self.spot0/H)**h2
+            return self.K/(1 - h2) * (self.spot0/self.K * (h2 - 1) / h2)**h2, H
 
 
 class Numerical(Param):
-    def __init__(self, S0, K, sigma, r, d, T, M):
-       super().__init__(S0, K, sigma, r, d, T)
+    def __init__(self, spot0, K, sigma, r, d, T, M):
+       super().__init__(spot0, K, sigma, r, d, T)
        self.M = M # Number of simulations/paths
 
     def payoff(self, S_t, option):
@@ -118,15 +122,45 @@ class Numerical(Param):
         Z = rnorm(0, 1, self.M)
         drift = (self.r - self.delta - 0.5*self.sigma**2)*self.T
         diffusion =  self.sigma*sqrt(self.T)*Z
-        return self.S0*np.exp(drift + diffusion)
+        return self.spot0*np.exp(drift + diffusion)
 
     def EM(self, N):
         dt = self.T / N # timestep
         S = np.zeros((self.M, N))
         Z = rnorm(0, 1, (self.M, N))
         for i in range(self.M):
-            S[i][0] = self.S0
+            S[i][0] = self.spot0
             for j in range(1, N):
                 S[i][j] = S[i][j-1]*(1 + self.r*dt +\
                         self.sigma*sqrt(dt)*Z[i][j-1])
         return S[:,-1]
+
+def exchange_option(S, K, sig_s, sig_k, delta_s, delta_k, rho, T):
+
+    """
+    With a call we give up cash to acquire stock. The dividend yield on cash is
+    the interest rate. This if we set delta_s = delta, delta_k = r, and 
+    sigma_k = 0, the formula reduces to standard Black-Scholes formula for a call
+
+    With a put, we give up stock to acquire cash. Thus setting delta_s = r, 
+    delta_k = delta and sigma_s = 0, the formula reduces to the Black-Scholes formula for a put option.
+    """
+
+    sigma = sqrt(sig_s**2 + sig_k**2 - 2*rho*sig_s*sig_k)
+
+    d1 = (log(S*exp(-delta_s*T)/(K*exp(-delta_k*T))) + 0.5*sigma**2*T)\
+            /(sigma*sqrt(T))
+    d2 = d1 - sigma*sqrt(T)
+
+    return S*exp(-delta_s*T)*norm.cdf(d1) -\
+           K*exp(-delta_k*T)*norm.cdf(d2)
+
+def gap_option(S, K1, K2, sigma, r, delta, T):
+
+    d1 = (log(S*exp(-delta*T)/(K2*exp(-r*T))) + 0.5*sigma**2*T)\
+            /(sigma*sqrt(T))
+    d2 = d1 - sigma*sqrt(T)
+
+    return S*exp(-delta*T)*norm.cdf(d1) -\
+           K1*exp(-r*T)*norm.cdf(d2)
+

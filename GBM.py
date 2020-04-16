@@ -2,8 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy.random import normal as rnorm
 from math import sqrt, exp
+
 seed = 5
-N = 2.**5
+N = 2.**9
 
 def brownian(seed, N):
     np.random.seed(seed)
@@ -28,22 +29,22 @@ W = np.insert(W, 0, 0)
 ##plt.plot(xw, W)
 #plt.title('Brownian Motion')
 
-S0 = 100; mu = 0.1; sigma = 0.2; T = 1; N = 2**5; T = 1
+spot0 = 100; mu = 0.1; sigma = 0.2; T = 1; N = 2**9; T = 1
 
-def GBM(S0, mu, sigma, W, T, N):
+def GBM(spot0, mu, sigma, W, T, N):
     t = np.linspace(0, 1, N+1)
     S = []
-    S.append(S0)
+    S.append(spot0)
     for i in range(1, int(N+1)):
         drift = (mu - 0.5*sigma**2)*t[i]
         diffusion = sigma*W[i-1]
-        S_temp = S0*exp(drift + diffusion)
+        S_temp = spot0*exp(drift + diffusion)
         S.append(S_temp)
     return S, t
 
-def EM(S0, mu, sigma, b, T, N):
+def EM(spot0, mu, sigma, b, T, N):
     dt = 1/N
-    w = [S0]
+    w = [spot0]
     for j in range(0, N):
         w_ = w[j]*(1 + mu*dt + sigma*rnorm(0,1)*sqrt(1/N))
         w.append(w_)
