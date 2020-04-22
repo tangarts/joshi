@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from numpy.random import normal as rnorm
@@ -6,8 +5,6 @@ import numpy as np
 from scipy.stats import norm
 from math import exp, log, sqrt # python functions faster than numpy for scalar 
 
-seed = 1
-np.random.seed(seed)
 # Put-Call parity: C - P = exp(-rT)(F - K) = S - exp(-rT)K
 # Call option can be decomposed into difference of asset minus cash digital
 # option
@@ -41,9 +38,6 @@ class Param():
         self.opt_type = opt_type or self.OptionType.CALL 
         self.exer_type = exer_type or self.OptionExerciseType.EUROPEAN
 
-    def copy(self):
-        return Param(self.spot0, self.K, self.sigma, self.r, self.delta, 
-                        self.T, self.opt_type, self.exer_type)
 
     def print_parameters(self):
         """print parameters"""

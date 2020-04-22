@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from model import BlackScholes
+from joshi import *
 
 class TestVanillaBlackScholes(unittest.TestCase):
 
