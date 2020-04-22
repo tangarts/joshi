@@ -3,15 +3,18 @@
 **Implementation**
 
 - Black Scholes Model
-        - Vanilla European and American put/call
-        - The Greeks (Delta, Theta, Gamma, ...)
-        - 
+	- Vanilla European and American put/call
+	- The Greeks (Delta, Theta, Gamma, ...) 
 
 - Binomial Tree
-        - Porfolio replication
-        - European and American option
+	- Porfolio replication
+	- European and American option
 
 - Numerical 
-        - Divided differnce
-        - Monte-carlo Simulation
+	- Divided difference
+	- Monte-carlo Simulation
+
+- unittests 
+
+- graphs
 
