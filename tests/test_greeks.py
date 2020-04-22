@@ -2,7 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from model import BlackScholes
+
+import sys
+import os
+sys.path.append(os.getcwd() + '/..')
+
+from joshi.model import BlackScholes
+
 
 EPSILON = 1e-5
 TOL = 1e-4

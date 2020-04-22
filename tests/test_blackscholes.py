@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from joshi import *
+import sys
+import os
+sys.path.append(os.getcwd() + '/..')
+
+from joshi.model import BlackScholes
 
 class TestVanillaBlackScholes(unittest.TestCase):
 
