@@ -5,9 +5,9 @@ import unittest
 
 import sys
 import os
-sys.path.append(os.getcwd() + '/..')
+sys.path.append(os.getcwd() + '/')
 
-from joshi.model import BlackScholes
+from src.model import BlackScholes
 
 
 EPSILON = 1e-5
