@@ -14,7 +14,9 @@ from math import exp, log, sqrt # python functions faster than numpy for scalar
 #
 
 class Param():
-
+    """
+    Parameter class shared across models
+    """
     DEFAULT_BINOMIAL_TREE_NUM_STEPS = 25
     DEFAULT_MONTE_CARLO_NUM_STEPS = 50
     DEFAULT_MONTE_CARLO_NUM_PATHS = 100
@@ -29,12 +31,33 @@ class Param():
     OptionMeasure = enum(VALUE='value', DELTA='delta', THETA='theta', RHO='rho', VEGA='vega', GAMMA='gamma')
 
     def __init__(self, spot0, K, sigma, r, d, T, opt_type=None, exer_type=None):
-        self.spot0     =  spot0     #  spot price
-        self.K      =  K      #  strike price
-        self.sigma  =  sigma  #  volatility
-        self.r      =  r      #  risk free rate
-        self.delta      =  d      #  dividend rate
-        self.T      =  T      #  time-to-maturity
+        """
+
+        args:
+           spot0: int
+                spot price
+           K: int
+                strike price
+           sigma: float
+                volatility
+           r: float
+                risk-free rate
+           d: float
+                dividend rate
+           T: float 
+                time to maturity
+           opt_type: Enum
+                option type {CALL, PUT}
+           exer_type: Enum
+                exercise type {AMERICAN, EUROPEAN}
+            
+        """
+        self.spot0  =  spot0    
+        self.K      =  K      
+        self.sigma  =  sigma  
+        self.r      =  r     
+        self.delta  =  d      
+        self.T      =  T      
         self.opt_type = opt_type or self.OptionType.CALL 
         self.exer_type = exer_type or self.OptionExerciseType.EUROPEAN
 
@@ -157,6 +180,7 @@ class BlackScholes(Param):
 
     @staticmethod
     def gap_option(S, K1, K2, sigma, r, delta, T):
+        """ compute gap option """
 
         d1 = (log(S*exp(-delta*T)/(K2*exp(-r*T))) + 0.5*sigma**2*T)\
                 /(sigma*sqrt(T))
@@ -189,8 +213,15 @@ class BlackScholes(Param):
 
 
 class Numerical(Param):
+    """
+    Numerical methods 
+    """
 
     def __init__(self, spot0, K, sigma, r, d, T, opt_type=None, exer_type=None, M=None, N=None):
+        """
+        args:
+            Params
+        """
        super().__init__(spot0, K, sigma, r, d, T, opt_type, exer_type)
        self.M = M or self.DEFAULT_MONTE_CARLO_NUM_PATHS # Number of simulations/paths
        self.N = N or self.DEFAULT_MONTE_CARLO_NUM_STEPS
@@ -297,7 +328,8 @@ class Binomial(Param):
             for i in range(self.N -1, -1, -1):
                 for j in range(0, i + 1):
                     option[j, i] = exp(-self.r*self.h)* \
-                            (self.q*max(option[j, i + 1], payoff[j, i + 1]) + (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1]))     
+                            (self.q*max(option[j, i + 1], payoff[j, i + 1]) +\
+                            (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1]))     
 
         elif self.opt_type == 'put':
             payoff = np.maximum( np.triu(self.K - stock), 0 )
@@ -305,7 +337,8 @@ class Binomial(Param):
             for i in range(self.N -1, -1, -1):
                 for j in range(0, i + 1):
                     option[j, i] = exp(-self.r*self.h)* \
-                            (self.q*max(option[j, i + 1], payoff[j, i + 1]) + (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1])) 
+                            (self.q*max(option[j, i + 1], payoff[j, i + 1]) +\
+                            (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1])) 
 
         return option
 
@@ -320,4 +353,11 @@ class Binomial(Param):
                 B[j, i] = exp(-self.r*self.h)*(option[j , i + 1]*self.d - option[j + 1, i + 1]*self.u) / (self.u - self.d)
         return delta
 
+class Hedge:
+
+    def stop_loss():
+        pass
+
+    def delta_hedge():
+        pass
 
