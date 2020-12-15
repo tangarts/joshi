@@ -105,19 +105,22 @@ class BlackScholes(Param):
     
     def forward(self): return self.spot0*exp(-self.delta*self.T)
 
-    def d1(self): return (log(self.spot0/self.K) + \
-	(self.r - self.delta + 0.5*self.sigma**2)*self.T)/(self.sigma*sqrt(self.T))
+    def d1(self):
+        return (log(self.spot0/self.K)\
+                + (self.r - self.delta + 0.5*self.sigma**2)
+                * self.T)\
+                / self.sigma*sqrt(self.T)
 
     def d2(self): return self.d1() - self.sigma*sqrt(self.T)
 
     def vanilla_price(self):
         if self.opt_type == self.OptionType.CALL:
-            return self.spot0*exp(-self.delta*self.T)*norm.cdf(self.d1()) -\
-            self.K*exp(-self.r*self.T)*norm.cdf(self.d2())
+            return self.spot0*exp(-self.delta*self.T)*norm.cdf(self.d1())\
+                    - self.K*exp(-self.r*self.T)*norm.cdf(self.d2())
 
         elif self.opt_type == self.OptionType.PUT:
-            return self.K*exp(-self.r*self.T)*norm.cdf(-self.d2()) -\
-                    self.spot0*exp(-self.delta*self.T)*norm.cdf(-self.d1())
+            return self.K*exp(-self.r*self.T)*norm.cdf(-self.d2())\
+                    - self.spot0*exp(-self.delta*self.T)*norm.cdf(-self.d1())
 
     def digital_price(self):
         if self.opt_type == self.OptionType.CALL:
@@ -141,9 +144,11 @@ class BlackScholes(Param):
         elif self.opt_type == 'call':
             return exp(-self.delta*self.T)*norm.cdf(self.d1())
 
-    def Gamma(self): return exp(-self.delta*self.T)*norm.pdf(self.d1()) / (self.spot0*self.sigma*sqrt(self.T))
+    def Gamma(self):
+        return exp(-self.delta*self.T)*norm.pdf(self.d1()) / (self.spot0*self.sigma*sqrt(self.T))
 
-    def Vega(self): return exp(-self.delta*self.T)*self.spot0*norm.pdf(self.d1())*sqrt(self.T)
+    def Vega(self):
+        return exp(-self.delta*self.T)*self.spot0*norm.pdf(self.d1())*sqrt(self.T)
 
     def Theta(self):
         if self.opt_type == 'call':
@@ -165,15 +170,19 @@ class BlackScholes(Param):
 
     def perpetual(self):
         if self.opt_type == 'call':
-            h1 = 0.5 - (self.r - self.delta)/self.sigma**2 + \
-	    sqrt(((self.r - self.delta)/self.sigma**2 - 0.5)**2 + 2*self.r/self.sigma**2)
+            h1 = 0.5 - (self.r - self.delta)/self.sigma**2\
+                     + sqrt(((self.r - self.delta)/self.sigma**2 - 0.5)**2\
+                     + 2*self.r/self.sigma**2)
+
             H = self.K*(h1 / (h1-1))
             payoff = (H - self.K)* (self.spot0/H)**h1
             return self.K/(h1 - 1) * (self.spot0/self.K * (h1 - 1) / h1)**h1, H
 
         elif self.opt_type == 'put':
-            h2 = 0.5 - (self.r - self.delta)/self.sigma**2 - \
-	    sqrt(((self.r - self.delta)/self.sigma**2 - 0.5)**2 + 2*self.r/self.sigma**2)
+            h2 = 0.5 - (self.r - self.delta)/self.sigma**2\
+                     - sqrt(((self.r - self.delta)/self.sigma**2 - 0.5)**2\
+                     + 2*self.r/self.sigma**2)
+
             H = self.K*(h2 / (h2-1))
             payoff = (self.K - H)* (self.spot0/H)**h2
             return self.K/(1 - h2) * (self.spot0/self.K * (h2 - 1) / h2)**h2, H
@@ -182,34 +191,35 @@ class BlackScholes(Param):
     def gap_option(S, K1, K2, sigma, r, delta, T):
         """ compute gap option """
 
-        d1 = (log(S*exp(-delta*T)/(K2*exp(-r*T))) + 0.5*sigma**2*T)\
-                /(sigma*sqrt(T))
+        d1 = log(S*exp(-delta*T)/(K2*exp(-r*T))) + 0.5*sigma**2*T \
+                / sigma*sqrt(T)
         d2 = d1 - sigma*sqrt(T)
 
-        return S*exp(-delta*T)*norm.cdf(d1) -\
-               K1*exp(-r*T)*norm.cdf(d2)
+        return S*exp(-delta*T)*norm.cdf(d1) - K1*exp(-r*T)*norm.cdf(d2)
 
 
     @staticmethod
     def exchange_option(S, K, sig_s, sig_k, delta_s, delta_k, rho, T):
 
         """
-        With a call we give up cash to acquire stock. The dividend yield on cash is
-        the interest rate. This if we set delta_s = delta, delta_k = r, and 
-        sigma_k = 0, the formula reduces to standard Black-Scholes formula for a call
+        With a call we give up cash to acquire stock. The dividend yield on
+        cash is the interest rate. This if we set delta_s = delta, delta_k = r,
+        and sigma_k = 0, the formula reduces to standard Black-Scholes formula
+        for a call
 
-        With a put, we give up stock to acquire cash. Thus setting delta_s = r, 
-        delta_k = delta and sigma_s = 0, the formula reduces to the Black-Scholes formula for a put option.
+        With a put, we give up stock to acquire cash. Thus setting delta_s = r,
+        delta_k = delta and sigma_s = 0, the formula reduces to the
+        Black-Scholes formula for a put option.
         """
 
         sigma = sqrt(sig_s**2 + sig_k**2 - 2*rho*sig_s*sig_k)
 
-        d1 = (log(S*exp(-delta_s*T)/(K*exp(-delta_k*T))) + 0.5*sigma**2*T)\
-                /(sigma*sqrt(T))
+        d1 = log(S*exp(-delta_s*T)/(K*exp(-delta_k*T))) + 0.5*sigma**2*T \
+                / sigma*sqrt(T)
+
         d2 = d1 - sigma*sqrt(T)
 
-        return S*exp(-delta_s*T)*norm.cdf(d1) -\
-               K*exp(-delta_k*T)*norm.cdf(d2)
+        return S*exp(-delta_s*T)*norm.cdf(d1) - K*exp(-delta_k*T)*norm.cdf(d2)
 
 
 class Numerical(Param):
@@ -222,9 +232,9 @@ class Numerical(Param):
         args:
             Params
         """
-       super().__init__(spot0, K, sigma, r, d, T, opt_type, exer_type)
-       self.M = M or self.DEFAULT_MONTE_CARLO_NUM_PATHS # Number of simulations/paths
-       self.N = N or self.DEFAULT_MONTE_CARLO_NUM_STEPS
+        super().__init__(spot0, K, sigma, r, d, T, opt_type, exer_type)
+        self.M = M or self.DEFAULT_MONTE_CARLO_NUM_PATHS # Number of simulations/paths
+        self.N = N or self.DEFAULT_MONTE_CARLO_NUM_STEPS
 
 
     def payoff(self, S_t):
@@ -257,8 +267,7 @@ class Numerical(Param):
         for i in range(self.M):
             S[i, 0] = self.spot0
             for j in range(1, self.N):
-                S[i, j] = S[i, j-1]*(1 + mu*dt +\
-                        self.sigma*W[i, j-1])
+                S[i, j] = S[i, j-1] * (1 + mu*dt + self.sigma*W[i, j-1])
         return S[:,-1]
 
     def value(self): return self.payoff(self.GBM())
@@ -305,15 +314,17 @@ class Binomial(Param):
             option[:, self.N] = np.maximum(np.zeros(self.N + 1), (stock[:, self.N] - self.K))
             for i in range(self.N - 1, -1, -1):
                 for j in range(0, i + 1):
-                    option[j, i] = exp(-self.r*self.h)* \
-                    (self.q*option[j, i + 1] + (1-self.q)*option[j + 1, i + 1])
+                    option[j, i] = exp(-self.r*self.h)\
+                            * (self.q*option[j, i + 1]\
+                            + (1-self.q)*option[j + 1, i + 1])
 
         elif self.opt_type == 'put':
             option[:, self.N] = np.maximum(np.zeros(self.N + 1), (self.K - stock[:, self.N]) ) # put payoff
             for i in range(self.N - 1, -1, -1):
                 for j in range(0, i + 1):
-                    option[j, i] = exp(-self.r*self.h)* \
-                    (self.q*option[j, i + 1] + (1-self.q)*option[j + 1, i + 1])
+                    option[j, i] = exp(-self.r*self.h)\
+                            * (self.q*option[j, i + 1]\
+                            + (1-self.q)*option[j + 1, i + 1])
 
         return option
 
@@ -327,18 +338,18 @@ class Binomial(Param):
             option[:, self.N] = np.maximum(np.zeros(self.N + 1), (stock[:, self.N] - self.K))
             for i in range(self.N -1, -1, -1):
                 for j in range(0, i + 1):
-                    option[j, i] = exp(-self.r*self.h)* \
-                            (self.q*max(option[j, i + 1], payoff[j, i + 1]) +\
-                            (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1]))     
+                    option[j, i] = exp(-self.r*self.h)\
+                            * (self.q*max(option[j, i + 1], payoff[j, i + 1])\
+                            + (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1]))
 
         elif self.opt_type == 'put':
             payoff = np.maximum( np.triu(self.K - stock), 0 )
             option[:, self.N] = np.maximum(np.zeros(self.N + 1), (self.K - stock[:, self.N]))
             for i in range(self.N -1, -1, -1):
                 for j in range(0, i + 1):
-                    option[j, i] = exp(-self.r*self.h)* \
-                            (self.q*max(option[j, i + 1], payoff[j, i + 1]) +\
-                            (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1])) 
+                    option[j, i] = exp(-self.r*self.h)\
+                            * (self.q*max(option[j, i + 1], payoff[j, i + 1])\
+                            + (1-self.q)*max(option[j + 1, i + 1], payoff[j + 1, i + 1])) 
 
         return option
 
@@ -349,8 +360,11 @@ class Binomial(Param):
         B = np.zeros([self.N + 1, self.N + 1])
         for i in range(self.N - 1, -1, -1):
             for j in range(0, i + 1):
-                delta[j, i] = exp(-self.delta*self.h)*(option[j , i + 1] - option[j + 1, i + 1]) / ( (self.u - self.d)*stock[j,i] )
-                B[j, i] = exp(-self.r*self.h)*(option[j , i + 1]*self.d - option[j + 1, i + 1]*self.u) / (self.u - self.d)
+                delta[j, i] = exp(-self.delta*self.h)\
+                        * (option[j , i + 1] - option[j + 1, i + 1])\
+                        / ( (self.u - self.d)*stock[j,i] )
+                B[j, i] = exp(-self.r*self.h)*(option[j , i + 1]\
+                        * self.d - option[j + 1, i + 1] * self.u) / (self.u - self.d)
         return delta
 
 class Hedge:
