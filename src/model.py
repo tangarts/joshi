@@ -4,7 +4,7 @@ from numpy.random import normal as rnorm
 import numpy as np
 from scipy.stats import norm
 import argparse
-from math import exp, log, sqrt  # python functions faster than numpy for scalar
+from math import exp, log, sqrt  # math.py faster than numpy for scalar
 
 # Put-Call parity: C - P = exp(-rT)(F - K) = S - exp(-rT)K
 # Call option can be decomposed into difference of asset minus cash digital
@@ -53,7 +53,7 @@ class Param:
         GAMMA="gamma",
     )
 
-    def __init__(self, spot0, strike, sigma, r, d, T, opt_type=None, exer_type=None):
+    def __init__(self, spot0, strike, vol, r, d, T, opt_type=None, exer_type=None):
         """
 
         args:
@@ -61,7 +61,7 @@ class Param:
                 spot price
            strike: int
                 strike price
-           sigma: float
+           vol: float
                 volatility
            r: float
                 risk-free rate
@@ -76,7 +76,7 @@ class Param:
         """
         self.spot0 = spot0
         self.strike = strike
-        self.sigma = sigma
+        self.vol = vol
         self.r = r
         self.delta = d
         self.T = T
@@ -91,12 +91,22 @@ class Param:
         print("---------------------------------------------")
         print("Underlying Asset Price = ", self.spot0)
         print("Strike Price = ", self.strike)
-        print("Volatility = ", self.sigma)
+        print("Volatility = ", self.vol)
         print("Risk-Free Rate = ", self.r)
         print("Dividend Rate = ", self.delta)
         print("Time to Maturity (years) = ", self.T)
         print("---------------------------------------------")
         print("---------------------------------------------")
+
+    def args(self):
+        args = {'spot0': self.spot0,
+                'strike': self.strike,
+                'vol': self.vol,
+                'r': self.r,
+                'delta': self.delta,
+                'T': self.T,
+                }
+        return args
 
 
 """
@@ -116,9 +126,9 @@ Assumptions on the market:
 
 class BlackScholes(Param):
     def __init__(
-        self, spot0, strike, sigma, r, delta, T, opt_type=None, exer_type=None
+        self, spot0, strike, vol, r, delta, T, opt_type=None, exer_type=None
     ):
-        super().__init__(spot0, strike, sigma, r, delta, T, opt_type, exer_type)
+        super().__init__(spot0, strike, vol, r, delta, T, opt_type, exer_type)
 
         assert (
             self.exer_type == self.OptionExerciseType.EUROPEAN
@@ -133,11 +143,11 @@ class BlackScholes(Param):
     def d1(self):
         return (
             log(self.spot0 / self.strike)
-            + (self.r - self.delta + 0.5 * self.sigma ** 2) * self.T
-        ) / (self.sigma * sqrt(self.T))
+            + (self.r - self.delta + 0.5 * self.vol ** 2) * self.T
+        ) / (self.vol * sqrt(self.T))
 
     def d2(self):
-        return self.d1() - self.sigma * sqrt(self.T)
+        return self.d1() - self.vol * sqrt(self.T)
 
     def vanilla_price(self):
         if self.opt_type == self.OptionType.CALL:
@@ -158,33 +168,33 @@ class BlackScholes(Param):
 
     def get_greeks(self):
         the_greeks = {
-            "delta": self.Delta(),
-            "gamma": self.Gamma(),
-            "theta": self.Theta(),
-            "vega": self.Vega(),
-            "rho": self.Rho(),
+            "delta": self._delta(),
+            "gamma": self._gamma(),
+            "theta": self._theta(),
+            "vega": self._vega(),
+            "rho": self._rho(),
         }
         return the_greeks
 
-    def Delta(self):
+    def _delta(self):
         if self.opt_type == "put":
             return -exp(-self.delta * self.T) * norm.cdf(-self.d1())
         elif self.opt_type == "call":
             return exp(-self.delta * self.T) * norm.cdf(self.d1())
 
-    def Gamma(self):
+    def _gamma(self):
         return (
             exp(-self.delta * self.T)
             * norm.pdf(self.d1())
-            / (self.spot0 * self.sigma * sqrt(self.T))
+            / (self.spot0 * self.vol * sqrt(self.T))
         )
 
-    def Vega(self):
+    def _vega(self):
         return (
             exp(-self.delta * self.T) * self.spot0 * norm.pdf(self.d1()) * sqrt(self.T)
         )
 
-    def Theta(self):
+    def _theta(self):
         if self.opt_type == "call":
             return (
                 self.delta
@@ -195,7 +205,7 @@ class BlackScholes(Param):
                     exp(-self.r * self.T)
                     * self.strike
                     * norm.pdf(self.d2())
-                    * self.sigma
+                    * self.vol
                 )
                 / (2 * sqrt(self.T))
                 - self.r * self.strike * exp(-self.r * self.T) * norm.cdf(self.d2())
@@ -211,13 +221,13 @@ class BlackScholes(Param):
                     exp(-self.delta * self.T)
                     * self.spot0
                     * norm.pdf(self.d1())
-                    * self.sigma
+                    * self.vol
                 )
                 / (2 * sqrt(self.T))
                 + self.r * self.strike * exp(-self.r * self.T) * norm.cdf(-self.d2())
             )
 
-    def Rho(self):
+    def _rho(self):
         if self.opt_type == "call":
             return self.strike * self.T * exp(-self.r * self.T) * norm.cdf(self.d2())
         elif self.opt_type == "put":
@@ -227,10 +237,10 @@ class BlackScholes(Param):
         if self.opt_type == "call":
             h1 = (
                 0.5
-                - (self.r - self.delta) / self.sigma ** 2
+                - (self.r - self.delta) / self.vol ** 2
                 + sqrt(
-                    ((self.r - self.delta) / self.sigma ** 2 - 0.5) ** 2
-                    + 2 * self.r / self.sigma ** 2
+                    ((self.r - self.delta) / self.vol ** 2 - 0.5) ** 2
+                    + 2 * self.r / self.vol ** 2
                 )
             )
 
@@ -246,10 +256,10 @@ class BlackScholes(Param):
         elif self.opt_type == "put":
             h2 = (
                 0.5
-                - (self.r - self.delta) / self.sigma ** 2
+                - (self.r - self.delta) / self.vol ** 2
                 - sqrt(
-                    ((self.r - self.delta) / self.sigma ** 2 - 0.5) ** 2
-                    + 2 * self.r / self.sigma ** 2
+                    ((self.r - self.delta) / self.vol ** 2 - 0.5) ** 2
+                    + 2 * self.r / self.vol ** 2
                 )
             )
 
@@ -263,13 +273,13 @@ class BlackScholes(Param):
             )
 
     @staticmethod
-    def gap_option(S, strike1, strike2, sigma, r, delta, T):
+    def gap_option(S, strike1, strike2, vol, r, delta, T):
         """ compute gap option """
 
         d1 = log(
             S * exp(-delta * T) / (strike2 * exp(-r * T))
-        ) + 0.5 * sigma ** 2 * T / sigma * sqrt(T)
-        d2 = d1 - sigma * sqrt(T)
+        ) + 0.5 * vol ** 2 * T / vol * sqrt(T)
+        d2 = d1 - vol * sqrt(T)
 
         return S * exp(-delta * T) * norm.cdf(d1) - strike1 * exp(-r * T) * norm.cdf(d2)
 
@@ -279,21 +289,21 @@ class BlackScholes(Param):
         """
         With a call we give up cash to acquire stock. The dividend yield on
         cash is the interest rate. This if we set delta_s = delta, delta_k = r,
-        and sigma_k = 0, the formula reduces to standard Black-Scholes formula
+        and vol_k = 0, the formula reduces to standard Black-Scholes formula
         for a call
 
         With a put, we give up stock to acquire cash. Thus setting delta_s = r,
-        delta_k = delta and sigma_s = 0, the formula reduces to the
+        delta_k = delta and vol_s = 0, the formula reduces to the
         Black-Scholes formula for a put option.
         """
 
-        sigma = sqrt(sig_s ** 2 + sig_k ** 2 - 2 * rho * sig_s * sig_k)
+        vol = sqrt(sig_s ** 2 + sig_k ** 2 - 2 * rho * sig_s * sig_k)
 
         d1 = log(
             S * exp(-delta_s * T) / (strike * exp(-delta_k * T))
-        ) + 0.5 * sigma ** 2 * T / sigma * sqrt(T)
+        ) + 0.5 * vol ** 2 * T / vol * sqrt(T)
 
-        d2 = d1 - sigma * sqrt(T)
+        d2 = d1 - vol * sqrt(T)
 
         return S * exp(-delta_s * T) * norm.cdf(d1) - strike * exp(
             -delta_k * T
@@ -309,7 +319,7 @@ class Numerical(Param):
         self,
         spot0,
         strike,
-        sigma,
+        vol,
         r,
         d,
         T,
@@ -322,7 +332,7 @@ class Numerical(Param):
         args:
             Params
         """
-        super().__init__(spot0, strike, sigma, r, d, T, opt_type, exer_type)
+        super().__init__(spot0, strike, vol, r, d, T, opt_type, exer_type)
         self.M = M or self.DEFAULT_MONTE_CARLO_NUM_PATHS  # Number of simulations/paths
         self.N = N or self.DEFAULT_MONTE_CARLO_NUM_STEPS
 
@@ -334,8 +344,8 @@ class Numerical(Param):
 
     def GBM(self):
         Z = rnorm(0, 1, self.M)
-        drift = (self.r - self.delta - 0.5 * self.sigma ** 2) * self.T
-        diffusion = self.sigma * sqrt(self.T) * Z
+        drift = (self.r - self.delta - 0.5 * self.vol ** 2) * self.T
+        diffusion = self.vol * sqrt(self.T) * Z
         return self.spot0 * np.exp(drift + diffusion)
 
     def generate_gbm_path(self):
@@ -343,8 +353,8 @@ class Numerical(Param):
         t = np.linspace(dt, self.T, self.N)
         dW = rnorm(0, dt ** 0.5, self.N)  # (self.M, self.N))
         W = np.cumsum(dW)  # , axis=1) if self.M > 1 else np.cumsum(dW)
-        drift = (self.r - self.delta - 0.5 * self.sigma ** 2) * t
-        diffusion = self.sigma * W
+        drift = (self.r - self.delta - 0.5 * self.vol ** 2) * t
+        diffusion = self.vol * W
         return self.spot0 * np.exp(drift + diffusion)
 
     def EM(self):
@@ -355,7 +365,7 @@ class Numerical(Param):
         for i in range(self.M):
             S[i, 0] = self.spot0
             for j in range(1, self.N):
-                S[i, j] = S[i, j - 1] * (1 + mu * dt + self.sigma * W[i, j - 1])
+                S[i, j] = S[i, j - 1] * (1 + mu * dt + self.vol * W[i, j - 1])
         return S[:, -1]
 
     def value(self):
@@ -365,7 +375,7 @@ class Numerical(Param):
         exact = BlackScholes(
             self.spot0,
             self.strike,
-            self.sigma,
+            self.vol,
             self.r,
             self.delta,
             self.T,
@@ -379,9 +389,9 @@ class Numerical(Param):
 
 class Binomial(Param):
     def __init__(
-        self, spot0, strike, sigma, r, delta, T, opt_type=None, exer_type=None, N=None
+        self, spot0, strike, vol, r, delta, T, opt_type=None, exer_type=None, N=None
     ):
-        super().__init__(spot0, strike, sigma, r, delta, T, opt_type, exer_type)
+        super().__init__(spot0, strike, vol, r, delta, T, opt_type, exer_type)
         self.N = N or self.DEFAULT_BINOMIAL_TREE_NUM_STEPS
 
     @property
@@ -390,11 +400,11 @@ class Binomial(Param):
 
     @property
     def u(self):
-        return exp((self.r - self.delta) * self.h + self.sigma * sqrt(self.h))
+        return exp((self.r - self.delta) * self.h + self.vol * sqrt(self.h))
 
     @property
     def d(self):
-        return exp((self.r - self.delta) * self.h - self.sigma * sqrt(self.h))
+        return exp((self.r - self.delta) * self.h - self.vol * sqrt(self.h))
 
     @property
     def q(self):
@@ -488,11 +498,3 @@ class Binomial(Param):
                     / (self.u - self.d)
                 )
         return delta
-
-
-class Hedge:
-    def stop_loss():
-        pass
-
-    def delta_hedge():
-        pass

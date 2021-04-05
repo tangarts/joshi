@@ -25,7 +25,7 @@ class TestGreeks(unittest.TestCase):
         option = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -35,7 +35,7 @@ class TestGreeks(unittest.TestCase):
         option_plus_epsilon = BlackScholes(
             spot0=100 + EPSILON,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -58,7 +58,7 @@ class TestGreeks(unittest.TestCase):
         option = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -68,7 +68,7 @@ class TestGreeks(unittest.TestCase):
         option_plus_epsilon = BlackScholes(
             spot0=100 + EPSILON,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -79,7 +79,7 @@ class TestGreeks(unittest.TestCase):
         option_minus_epsilon = BlackScholes(
             spot0=100 - EPSILON,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -103,7 +103,7 @@ class TestGreeks(unittest.TestCase):
         option = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -113,7 +113,7 @@ class TestGreeks(unittest.TestCase):
         option_plus_epsilon = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3 + EPSILON,
+            vol=0.3 + EPSILON,
             r=0.05,
             delta=0.01,
             T=1,
@@ -136,7 +136,7 @@ class TestGreeks(unittest.TestCase):
         option = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -146,7 +146,7 @@ class TestGreeks(unittest.TestCase):
         option_plus_epsilon = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05 + EPSILON,
             delta=0.01,
             T=1,
@@ -167,7 +167,7 @@ class TestGreeks(unittest.TestCase):
         option = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -177,7 +177,7 @@ class TestGreeks(unittest.TestCase):
         option_plus_epsilon = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1 + EPSILON,

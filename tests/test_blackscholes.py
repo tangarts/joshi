@@ -17,7 +17,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         call = BlackScholes(
                 spot0=41,
                 strike=40,
-                sigma=0.3,
+                vol=0.3,
                 r=0.08,
                 delta=0,
                 T=0.25,
@@ -32,7 +32,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         call = BlackScholes(
                 spot0=1.25,
                 strike=1.2,
-                sigma=0.1,
+                vol=0.1,
                 r=0.01,
                 delta=0.03,
                 T=1.,
@@ -48,7 +48,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         put = BlackScholes(
                 spot0=41,
                 strike=40,
-                sigma=0.3,
+                vol=0.3,
                 r=0.08,
                 delta=0,
                 T=0.25,
@@ -68,7 +68,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         call = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -78,7 +78,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         put = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -98,7 +98,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         strike120 = BlackScholes(
             spot0=100,
             strike=120,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -108,7 +108,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         strike100 = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -118,7 +118,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         strike90 = BlackScholes(
             spot0=100,
             strike=90,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -136,7 +136,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         option = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -157,7 +157,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         vol_20 = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.2,
+            vol=0.2,
             r=0.05,
             delta=0.01,
             T=1,
@@ -167,7 +167,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         vol_30 = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -177,7 +177,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         vol_50 = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.5,
+            vol=0.5,
             r=0.05,
             delta=0.01,
             T=1,
@@ -196,7 +196,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         t_100 = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.0,
             T=1,
@@ -206,7 +206,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         t_50 = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.0,
             T=0.5,
@@ -216,7 +216,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         t_30 = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.0,
             T=0.3,
@@ -241,7 +241,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         option = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -260,7 +260,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         call = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
@@ -270,7 +270,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         put = BlackScholes(
             spot0=100,
             strike=100,
-            sigma=0.3,
+            vol=0.3,
             r=0.05,
             delta=0.01,
             T=1,
