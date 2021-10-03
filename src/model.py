@@ -10,6 +10,20 @@ from math import exp, log, sqrt  # math.py faster than numpy for scalar
 # Call option can be decomposed into difference of asset minus cash digital
 # option
 
+"""
+For the Black-Scholes model we have assumptions on the underlying assets:
+    - (riskless rate) The rate of return on the riskless asset is constant
+    - (random walk) Log returns of a stock price is an infinitesimal
+      random walk with drift. i.e. Geometric Brownian motion with
+      constant volatility and drift.
+    - The stock doesn't pay dividend.
+
+Assumptions on the market:
+    - No-arbitrage
+    - Possible to buy and sell any amount of stock
+    - No transaction fees
+"""
+
 
 def _parser():
     """ CLI args """
@@ -53,7 +67,8 @@ class Param:
         GAMMA="gamma",
     )
 
-    def __init__(self, spot0, strike, vol, r, d, T, opt_type=None, exer_type=None):
+    def __init__(
+            self, spot0, strike, vol, r, delta, T, opt_type=None, exer_type=None):
         """
 
         args:
@@ -65,9 +80,9 @@ class Param:
                 volatility
            r: float
                 risk-free rate
-           d: float
+           delta: float
                 dividend rate
-           T: float 
+           T: float
                 time to maturity
            opt_type: Enum
                 option type {CALL, PUT}
@@ -78,12 +93,12 @@ class Param:
         self.strike = strike
         self.vol = vol
         self.r = r
-        self.delta = d
+        self.delta = delta
         self.T = T
         self.opt_type = opt_type or self.OptionType.CALL
         self.exer_type = exer_type or self.OptionExerciseType.EUROPEAN
 
-    def __repr__(self):
+    def _print(self):
         """print parameters"""
         print("---------------------------------------------")
         print("---------------------------------------------")
@@ -108,21 +123,9 @@ class Param:
                 }
         return args
 
-
-"""
-For the Black-Scholes model we have assumptions on the underlying assets:
-    - (riskless rate) The rate of return on the riskless asset is constant
-    - (random walk) Log returns of a stock price is an infinitesimal
-      random walk with drift. i.e. Geometric Brownian motion with
-      constant volatility and drift.
-    - The stock doesn't pay dividend.
-
-Assumptions on the market:
-    - No-arbitrage
-    - Possible to buy and sell any amount of stock
-    - No transaction fees
-"""
-
+class Option:
+    def __init__(self):
+        pass
 
 class BlackScholes(Param):
     def __init__(
@@ -312,7 +315,7 @@ class BlackScholes(Param):
 
 class Numerical(Param):
     """
-    Numerical methods 
+    Numerical methods
     """
 
     def __init__(
@@ -321,7 +324,7 @@ class Numerical(Param):
         strike,
         vol,
         r,
-        d,
+        delta,
         T,
         opt_type=None,
         exer_type=None,
@@ -332,15 +335,17 @@ class Numerical(Param):
         args:
             Params
         """
-        super().__init__(spot0, strike, vol, r, d, T, opt_type, exer_type)
-        self.M = M or self.DEFAULT_MONTE_CARLO_NUM_PATHS  # Number of simulations/paths
+        super().__init__(spot0, strike, vol, r, delta, T, opt_type, exer_type)
+        self.M = M or self.DEFAULT_MONTE_CARLO_NUM_PATHS  # simulations/paths
         self.N = N or self.DEFAULT_MONTE_CARLO_NUM_STEPS
 
-    def payoff(self, S_t):
+    def payoff(self, spot):
         if self.opt_type == "call":
-            return exp(-self.r * self.T) * np.mean(np.maximum(S_t - self.strike, 0))
+            return exp(-self.r * self.T)\
+                 * np.mean(np.maximum(spot - self.strike, 0))
         elif self.opt_type == "put":
-            return exp(-self.r * self.T) * np.mean(np.maximum(self.strike - S_t, 0))
+            return exp(-self.r * self.T)\
+                 * np.mean(np.maximum(self.strike - spot, 0))
 
     def GBM(self):
         Z = rnorm(0, 1, self.M)
@@ -484,7 +489,7 @@ class Binomial(Param):
         option = self.european()
         stock = self.stock()
         delta = np.zeros([self.N + 1, self.N + 1])
-        B = np.zeros([self.N + 1, self.N + 1])
+        bond = np.zeros([self.N + 1, self.N + 1])
         for i in range(self.N - 1, -1, -1):
             for j in range(0, i + 1):
                 delta[j, i] = (
@@ -492,7 +497,7 @@ class Binomial(Param):
                     * (option[j, i + 1] - option[j + 1, i + 1])
                     / ((self.u - self.d) * stock[j, i])
                 )
-                B[j, i] = (
+                bond[j, i] = (
                     exp(-self.r * self.h)
                     * (option[j, i + 1] * self.d - option[j + 1, i + 1] * self.u)
                     / (self.u - self.d)
