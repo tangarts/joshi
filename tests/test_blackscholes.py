@@ -2,59 +2,54 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
-import sys
-import os
-
-sys.path.append(os.getcwd() + "/")
 from src.model import BlackScholes
 
 
 class TestVanillaBlackScholes(unittest.TestCase):
     def test_vanilla_call(self):
         call = BlackScholes(
-                spot0=41,
-                strike=40,
-                vol=0.3,
-                r=0.08,
-                delta=0,
-                T=0.25,
-                opt_type='call',
-                exer_type="european")
+            spot0=41,
+            strike=40,
+            vol=0.3,
+            r=0.08,
+            delta=0,
+            T=0.25,
+            opt_type="call",
+            exer_type="european",
+        )
 
-        self.assertAlmostEqual(
-                call.vanilla_price(), 3.3990781872368956)
+        self.assertAlmostEqual(call.vanilla_price(), 3.3990781872368956)
 
         print("test_vanilla_call: PASS")
 
         call = BlackScholes(
-                spot0=1.25,
-                strike=1.2,
-                vol=0.1,
-                r=0.01,
-                delta=0.03,
-                T=1.,
-                opt_type='call',
-                exer_type="european")
+            spot0=1.25,
+            strike=1.2,
+            vol=0.1,
+            r=0.01,
+            delta=0.03,
+            T=1.0,
+            opt_type="call",
+            exer_type="european",
+        )
 
-        self.assertAlmostEqual(
-                call.vanilla_price(), 0.06140714873023745)
+        self.assertAlmostEqual(call.vanilla_price(), 0.06140714873023745)
 
         print("test_vanilla_call: PASS")
 
     def test_vanilla_put(self):
         put = BlackScholes(
-                spot0=41,
-                strike=40,
-                vol=0.3,
-                r=0.08,
-                delta=0,
-                T=0.25,
-                opt_type='put',
-                exer_type="european")
+            spot0=41,
+            strike=40,
+            vol=0.3,
+            r=0.08,
+            delta=0,
+            T=0.25,
+            opt_type="put",
+            exer_type="european",
+        )
 
-        self.assertAlmostEqual(
-                put.vanilla_price(), 1.6070251195071048)
+        self.assertAlmostEqual(put.vanilla_price(), 1.6070251195071048)
 
         print("test_vanilla_put: PASS")
 
@@ -90,7 +85,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
         print("test_put_call: PASS")
 
     def test_monotone_decreasing_call_with_strike(self):
-        """ 
+        """
         (ii) the price of a call should be monotone decreasing with strike.
         """
         strike120 = BlackScholes(
@@ -228,7 +223,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
 
     def test_convex_func_of_strike(self):
         """
-        (vi) call option should be convex function of strike 
+        (vi) call option should be convex function of strike
         """
         pass
 
@@ -252,7 +247,7 @@ class TestVanillaBlackScholes(unittest.TestCase):
 
     def test_digital_put_call_partiy(self):
         """
-        (viii) price of digital-call option plus digital-put option 
+        (viii) price of digital-call option plus digital-put option
         equal to zero-coupon bond
         """
         call = BlackScholes(

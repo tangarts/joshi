@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
-import sys
-import os
-
-sys.path.append(os.getcwd() + "/")
 from src.model import BlackScholes
 
 
@@ -45,7 +40,7 @@ class TestGreeks(unittest.TestCase):
             option_plus_epsilon.vanilla_price() - option.vanilla_price()
         ) / EPSILON
 
-        assert option.Delta() - approximate_delta < TOL
+        assert option._delta() - approximate_delta < TOL
         print("test_delta: PASS")
 
     def test_gamma(self):
@@ -90,7 +85,7 @@ class TestGreeks(unittest.TestCase):
             + option_minus_epsilon.vanilla_price()
         ) / EPSILON ** 2
 
-        assert option.Gamma() - approximate_gamma < TOL
+        assert option._gamma() - approximate_gamma < TOL
         print("test_gamma: PASS")
 
     def test_vega(self):
@@ -123,7 +118,7 @@ class TestGreeks(unittest.TestCase):
             option_plus_epsilon.vanilla_price() - option.vanilla_price()
         ) / EPSILON
 
-        assert option.Vega() - approximate_vega < TOL
+        assert option._vega() - approximate_vega < TOL
         print("test_vega: PASS")
 
     def test_rho(self):
@@ -154,7 +149,7 @@ class TestGreeks(unittest.TestCase):
         approximate_rho = (
             option_plus_epsilon.vanilla_price() - option.vanilla_price()
         ) / EPSILON
-        assert option.Rho() - approximate_rho < TOL
+        assert option._rho() - approximate_rho < TOL
         print("test_rho: PASS")
 
     def test_theta(self):
@@ -185,7 +180,7 @@ class TestGreeks(unittest.TestCase):
         approximate_theta = (
             -option_plus_epsilon.vanilla_price() + option.vanilla_price()
         ) / EPSILON
-        assert option.Theta() - approximate_theta < TOL
+        assert option._theta() - approximate_theta < TOL
         print("test_theta: PASS")
 
 

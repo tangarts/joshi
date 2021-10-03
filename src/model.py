@@ -2,7 +2,7 @@
 
 from numpy.random import normal as rnorm
 import numpy as np
-from scipy.stats import norm
+from statistics import NormalDist
 import argparse
 from math import exp, log, sqrt  # math.py faster than numpy for scalar
 
@@ -24,6 +24,7 @@ Assumptions on the market:
     - No transaction fees
 """
 
+norm = NormalDist() # initialises standard normal distribution 
 
 def _parser():
     """ CLI args """
