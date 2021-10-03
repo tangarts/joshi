@@ -9,8 +9,6 @@ import os
 sys.path.append(os.getcwd() + "/")
 from src.model import BlackScholes
 
-print(os.getcwd())
-
 
 class TestVanillaBlackScholes(unittest.TestCase):
     def test_vanilla_call(self):

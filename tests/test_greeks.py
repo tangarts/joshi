@@ -9,8 +9,6 @@ import os
 sys.path.append(os.getcwd() + "/")
 from src.model import BlackScholes
 
-print(os.getcwd())
-
 
 EPSILON = 1e-5
 TOL = 1e-4
@@ -18,7 +16,7 @@ TOL = 1e-4
 
 class TestGreeks(unittest.TestCase):
     def test_delta(self):
-        """ 
+        """
         Approximate delta calulated via finite difference
         delta equal to spot derivative of call option
         """
@@ -53,7 +51,7 @@ class TestGreeks(unittest.TestCase):
     def test_gamma(self):
         """
         Approximate gamma calulated via finite difference
-        gamma equal to second spot derivative of call option 
+        gamma equal to second spot derivative of call option
         """
         option = BlackScholes(
             spot0=100,
@@ -96,7 +94,7 @@ class TestGreeks(unittest.TestCase):
         print("test_gamma: PASS")
 
     def test_vega(self):
-        """ 
+        """
         Approximate vega calulated via finite difference
         vega equal to volatility derivative of call option
         """
@@ -129,7 +127,7 @@ class TestGreeks(unittest.TestCase):
         print("test_vega: PASS")
 
     def test_rho(self):
-        """ 
+        """
         Approximate rho calulated via finite difference
         rho equal to risk-free rate derivative of call option
         """
@@ -160,7 +158,7 @@ class TestGreeks(unittest.TestCase):
         print("test_rho: PASS")
 
     def test_theta(self):
-        """ 
+        """
         Approximate theta calulated via finite difference
         theta equal to negative time derivative of call option
         """
