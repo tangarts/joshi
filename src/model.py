@@ -3,7 +3,6 @@
 from numpy.random import normal as rnorm
 import numpy as np
 from statistics import NormalDist
-import argparse
 from math import exp, log, sqrt  # math.py faster than numpy for scalar
 
 # Put-Call parity: C - P = exp(-rT)(F - K) = S - exp(-rT)K
@@ -24,18 +23,7 @@ Assumptions on the market:
     - No transaction fees
 """
 
-norm = NormalDist() # initialises standard normal distribution 
-
-def _parser():
-    """ CLI args """
-    parser = argparse.ArgumentParser(description="options")
-
-    parser.add_argument("-s", dest="spot0", type=float, help="spot price")
-    args = parser.parse_args()
-    return args
-
-
-kwargs = vars(_parser())
+norm = NormalDist()  # initialises standard normal distribution
 
 
 class Param:
@@ -68,8 +56,7 @@ class Param:
         GAMMA="gamma",
     )
 
-    def __init__(
-            self, spot0, strike, vol, r, delta, T, opt_type=None, exer_type=None):
+    def __init__(self, spot0, strike, vol, r, delta, T, opt_type=None, exer_type=None):
         """
 
         args:
@@ -115,23 +102,24 @@ class Param:
         print("---------------------------------------------")
 
     def args(self):
-        args = {'spot0': self.spot0,
-                'strike': self.strike,
-                'vol': self.vol,
-                'r': self.r,
-                'delta': self.delta,
-                'T': self.T,
-                }
+        args = {
+            "spot0": self.spot0,
+            "strike": self.strike,
+            "vol": self.vol,
+            "r": self.r,
+            "delta": self.delta,
+            "T": self.T,
+        }
         return args
+
 
 class Option:
     def __init__(self):
         pass
 
+
 class BlackScholes(Param):
-    def __init__(
-        self, spot0, strike, vol, r, delta, T, opt_type=None, exer_type=None
-    ):
+    def __init__(self, spot0, strike, vol, r, delta, T, opt_type=None, exer_type=None):
         super().__init__(spot0, strike, vol, r, delta, T, opt_type, exer_type)
 
         assert (
@@ -205,12 +193,7 @@ class BlackScholes(Param):
                 * self.spot0
                 * exp(-self.delta * self.T)
                 * norm.cdf(self.d1())
-                - (
-                    exp(-self.r * self.T)
-                    * self.strike
-                    * norm.pdf(self.d2())
-                    * self.vol
-                )
+                - (exp(-self.r * self.T) * self.strike * norm.pdf(self.d2()) * self.vol)
                 / (2 * sqrt(self.T))
                 - self.r * self.strike * exp(-self.r * self.T) * norm.cdf(self.d2())
             )
@@ -278,7 +261,7 @@ class BlackScholes(Param):
 
     @staticmethod
     def gap_option(S, strike1, strike2, vol, r, delta, T):
-        """ compute gap option """
+        """compute gap option"""
 
         d1 = log(
             S * exp(-delta * T) / (strike2 * exp(-r * T))
@@ -342,11 +325,9 @@ class Numerical(Param):
 
     def payoff(self, spot):
         if self.opt_type == "call":
-            return exp(-self.r * self.T)\
-                 * np.mean(np.maximum(spot - self.strike, 0))
+            return exp(-self.r * self.T) * np.mean(np.maximum(spot - self.strike, 0))
         elif self.opt_type == "put":
-            return exp(-self.r * self.T)\
-                 * np.mean(np.maximum(self.strike - spot, 0))
+            return exp(-self.r * self.T) * np.mean(np.maximum(self.strike - spot, 0))
 
     def GBM(self):
         Z = rnorm(0, 1, self.M)
@@ -388,7 +369,7 @@ class Numerical(Param):
             self.opt_type,
             self.exer_type,
         ).vanilla_price()
-        simulated_price = [self.value() for self.M in steps]
+        simulated_price = np.array([self.value() for self.M in steps])
         error = abs(simulated_price - exact)
         return error
 
